@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:student_manager_state/presentation/home/home_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:student_manager_state/presentation/main/main_screen.dart';
 
-void main() {
+void main() async {
+  await Hive.initFlutter();
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 
@@ -11,9 +15,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
+      // theme: ThemeData(backgroundColor: veryLightColor),
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: MainScreen(),
     );
   }
 }
