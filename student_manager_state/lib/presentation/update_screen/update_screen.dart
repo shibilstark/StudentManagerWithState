@@ -7,6 +7,7 @@ import 'package:student_manager_state/application/bloc/student_bloc.dart';
 import 'package:student_manager_state/common/colors.dart';
 import 'package:student_manager_state/common/functions.dart';
 import 'package:student_manager_state/domain/model.dart';
+import 'package:student_manager_state/presentation/add_screen/add_screen.dart';
 
 enum Type {
   add,
@@ -20,23 +21,20 @@ Future<String> pickImage() async {
   return _image!.path;
 }
 
-ValueNotifier<bool> empty = ValueNotifier(false);
-ValueNotifier<String> img = ValueNotifier("");
+ValueNotifier<bool> _empty = ValueNotifier(false);
+ValueNotifier<String> _img = ValueNotifier("");
 
 TextEditingController _NameAddController = TextEditingController();
 TextEditingController _AgeAddController = TextEditingController();
 TextEditingController _CollegeAddController = TextEditingController();
 TextEditingController _PhoneAddController = TextEditingController();
 
-class AddScreen extends StatelessWidget {
-  final Type type;
-  int? editIndex;
-  AddScreen({Key? key, required this.type, int? this.editIndex})
-      : super(key: key);
+class UpdateScreen extends StatelessWidget {
+  final int editIndex;
+  const UpdateScreen({Key? key, required this.editIndex}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (type == Type.update) {}
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
@@ -46,6 +44,23 @@ class AddScreen extends StatelessWidget {
             child: Form(
               child: BlocBuilder<StudentBloc, StudentState>(
                 builder: (context, state) {
+                  final currentStudent = state.allStudents[editIndex];
+                  // WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+                  //   if (_NameAddController.value.text.isEmpty) {
+                  //     _NameAddController.value.text ==
+                  //         state.allStudents[editIndex].name;
+                  //   }
+                  //   if (_AgeAddController.value.text.isEmpty) {
+                  //     _AgeAddController.value.text ==
+                  //         state.allStudents[editIndex].age;
+                  //   }
+
+                  //   _CollegeAddController.value.text ==
+                  //       state.allStudents[editIndex].college;
+                  //   _PhoneAddController.value.text ==
+                  //       state.allStudents[editIndex].phone;
+                  // });
+
                   return Column(
                     children: [
                       Row(
@@ -57,20 +72,20 @@ class AddScreen extends StatelessWidget {
                                   MaterialStateProperty.all(mediumColor),
                             ),
                             onPressed: () async {
-                              img.value = await pickImage();
-                              img.notifyListeners();
+                              _img.value = await pickImage();
+                              _img.notifyListeners();
                             },
-                            child: type == Type.add
-                                ? Text("Pick Image")
-                                : Text("Update Image"),
+                            child: Text("Update Image"),
                           ),
                           ValueListenableBuilder(
-                              valueListenable: img,
+                              valueListenable: _img,
                               builder: (BuildContext context, dynamic img,
                                   Widget? child) {
                                 return img == ""
                                     ? CircleAvatar(
-                                        backgroundColor: mediumColor,
+                                        backgroundImage: FileImage(File(state
+                                            .allStudents[editIndex]
+                                            .studentImage)),
                                         radius: 80,
                                       )
                                     : CircleAvatar(
@@ -86,7 +101,7 @@ class AddScreen extends StatelessWidget {
                       TextFormField(
                         controller: _NameAddController,
                         decoration: InputDecoration(
-                          hintText: "Student Name",
+                          hintText: currentStudent.name,
                           filled: true,
                           fillColor: veryLightColor,
                           border: OutlineInputBorder(
@@ -102,7 +117,7 @@ class AddScreen extends StatelessWidget {
                         controller: _AgeAddController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          hintText: "Age",
+                          hintText: currentStudent.age,
                           filled: true,
                           fillColor: veryLightColor,
                           border: OutlineInputBorder(
@@ -116,7 +131,7 @@ class AddScreen extends StatelessWidget {
                       TextFormField(
                         controller: _CollegeAddController,
                         decoration: InputDecoration(
-                          hintText: "College",
+                          hintText: currentStudent.college,
                           filled: true,
                           fillColor: veryLightColor,
                           border: OutlineInputBorder(
@@ -132,7 +147,7 @@ class AddScreen extends StatelessWidget {
                         keyboardType: TextInputType.number,
                         controller: _PhoneAddController,
                         decoration: InputDecoration(
-                          hintText: "Phone No",
+                          hintText: currentStudent.phone,
                           filled: true,
                           fillColor: veryLightColor,
                           border: OutlineInputBorder(
@@ -144,7 +159,7 @@ class AddScreen extends StatelessWidget {
                         H: 20,
                       ),
                       ValueListenableBuilder(
-                        valueListenable: empty,
+                        valueListenable: _empty,
                         builder: (BuildContext context, bool isEmpty,
                             Widget? child) {
                           return Visibility(
@@ -160,73 +175,80 @@ class AddScreen extends StatelessWidget {
                         H: 50,
                       ),
                       Row(
-                        mainAxisAlignment: type == Type.add
-                            ? MainAxisAlignment.center
-                            : MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          type == Type.update
-                              ? ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Cancel"),
-                                  style: ButtonStyle(
-                                    backgroundColor: MaterialStateProperty.all(
-                                        veryDarkColor),
-                                    foregroundColor: MaterialStateProperty.all(
-                                        veryLightColor),
-                                  ),
-                                )
-                              : SizedBox(),
+                          ElevatedButton(
+                            onPressed: () {
+                              _NameAddController.clear();
+                              _AgeAddController.clear();
+                              _CollegeAddController.clear();
+                              _PhoneAddController.clear();
+                              _img.value = "";
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Cancel"),
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all(veryDarkColor),
+                              foregroundColor:
+                                  MaterialStateProperty.all(veryLightColor),
+                            ),
+                          ),
                           ElevatedButton(
                             onPressed: () async {
-                              if (_NameAddController.value.text
-                                      .trim()
-                                      .isEmpty ||
-                                  _AgeAddController.value.text.trim().isEmpty ||
-                                  _CollegeAddController.value.text
-                                      .trim()
-                                      .isEmpty ||
-                                  _PhoneAddController.value.text
-                                      .trim()
-                                      .isEmpty ||
-                                  img.value.isEmpty) {
-                                empty.value = true;
-                                empty.notifyListeners();
-                              } else {
-                                empty.value = false;
-                                empty.notifyListeners();
-                                if (type == Type.add) {
-                                  final model = StudentModel(
-                                      name:
-                                          _NameAddController.value.text.trim(),
-                                      age: _AgeAddController.value.text.trim(),
-                                      college: _CollegeAddController.value.text
-                                          .trim(),
-                                      phone:
-                                          _PhoneAddController.value.text.trim(),
-                                      studentImage: img.value);
-                                  BlocProvider.of<StudentBloc>(context)
-                                      .add(AddStudent(model: model));
+                              // if (_NameAddController.value.text
+                              //         .trim()
+                              //         .isEmpty ||
+                              //     _AgeAddController.value.text.trim().isEmpty ||
+                              //     _CollegeAddController.value.text
+                              //         .trim()
+                              //         .isEmpty ||
+                              //     _PhoneAddController.value.text
+                              //         .trim()
+                              //         .isEmpty ||
+                              //     _img.value.isEmpty) {
+                              //   _empty.value = true;
+                              //   _empty.notifyListeners();
+                              // } else {
+                              _empty.value = false;
+                              _empty.notifyListeners();
 
-                                  _NameAddController.clear();
-                                  _AgeAddController.clear();
-                                  _CollegeAddController.clear();
-                                  _PhoneAddController.clear();
-                                  img.value = "";
+                              final model = StudentModel(
+                                name: _NameAddController.value.text.isEmpty
+                                    ? currentStudent.name
+                                    : _NameAddController.value.text.trim(),
+                                age: _AgeAddController.value.text.isEmpty
+                                    ? currentStudent.age
+                                    : _AgeAddController.value.text.trim(),
+                                college: _CollegeAddController
+                                        .value.text.isEmpty
+                                    ? currentStudent.college
+                                    : _CollegeAddController.value.text.trim(),
+                                phone: _PhoneAddController.value.text.isEmpty
+                                    ? currentStudent.phone
+                                    : _PhoneAddController.value.text.trim(),
+                                studentImage: _img.value != ""
+                                    ? _img.value
+                                    : currentStudent.studentImage,
+                              );
+                              BlocProvider.of<StudentBloc>(context).add(
+                                  EditStudent(modle: model, index: editIndex));
 
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content: Text("Student Added"),
-                                    duration: Duration(milliseconds: 700),
-                                  ));
-                                  print(state.allStudents.length);
-                                } else {}
-                              }
+                              _NameAddController.clear();
+                              _AgeAddController.clear();
+                              _CollegeAddController.clear();
+                              _PhoneAddController.clear();
+                              _img.value = "";
+
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text("Student Added"),
+                                duration: Duration(milliseconds: 700),
+                              ));
+
+                              Navigator.of(context).pop();
                             },
-                            child: type == Type.add
-                                ? Text("Add Student")
-                                : Text("Update Student"),
+                            child: Text("Update Student"),
                             style: ButtonStyle(
                               backgroundColor:
                                   MaterialStateProperty.all(veryDarkColor),

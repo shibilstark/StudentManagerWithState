@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:student_manager_state/application/bloc/student_bloc.dart';
 import 'package:student_manager_state/common/colors.dart';
 import 'package:student_manager_state/common/styles.dart';
 import 'package:student_manager_state/presentation/add_screen/add_screen.dart';
@@ -48,7 +50,7 @@ class CommonAppBar extends StatelessWidget {
 
 final _pages = [
   const HomeScreen(),
-  const AddScreen(
+  AddScreen(
     type: Type.add,
   )
 ];
